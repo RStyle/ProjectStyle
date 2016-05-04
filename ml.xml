@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manialink>
+<timeout>0</timeout>
+<frame posn="20 -35 0">
+    <frame posn="-20 5 0" scale="0.15" >
+		<quad
+			style="Bgs1"
+			substyle="BgButton"
+			url="test3.com"
+			posn="-50 50 1"
+			sizen="40 40"
+		/>
+		<label posn="-30 -20 5" halign="center" text="$o$008Weißer Button mit 13123123" />
+    </frame>
+    <quad
+    image="./tmstyles/Bgs1/BgButton/image.png" 
+    url="test2.com"
+    pos="-0.5 0.5 1.5"
+    sizen="80 30"
+	/>
+</frame>
+<quad/>
+<quad
+    style="Bgs1"
+    substyle="BgButton"
+    url="test.com"
+    posn="-50 50 1"
+    sizen="40 40"
+/>
+<label posn="64 0 5" halign="right" style="CardButtonMedium" text="$o$008Weißer Button KREASS" />
+</manialink>
