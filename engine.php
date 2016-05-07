@@ -39,8 +39,8 @@ function add_hook($tag, $function, $priority = 10)
 $hook->load_all_plugins('sys/');
 $xml_hooks = $hook->hooks;
 
-$get_xml = file_get_contents('ml.xml');
-//$get_xml = file_get_contents('http://rstyle.paragon-esports.com/2010_HD/index.php');
+//$get_xml = file_get_contents('ml.xml');
+$get_xml = file_get_contents('http://rstyle.paragon-esports.com/2010_HD/index.php?'.$_SERVER['QUERY_STRING']);
 $manialink_xml_file = simplexml_load_string($get_xml);
 
 $attr = array('scale' => 1, 'p0' => '0', 'p1' => '0', 'p2' => '0', 'posn' => '0 0 0');
@@ -77,10 +77,6 @@ if (OUTPUT == 'web') {
 	<title>Title of the document</title>
 	<style type="text/css">
 	<!--
-	*{
-		font-family:Verdana;
-		color:#FFF;
-	}
 	img{
 		border:none;
 		position:absolute;
@@ -90,7 +86,9 @@ if (OUTPUT == 'web') {
 		margin:0;
 		padding:0;
 		font-size:16px;
-		background-color:#999;	
+		background-color:#999;
+		font-family:Verdana;
+		color:#FFF;
 	}
 	-->
 	</style>

@@ -3,13 +3,17 @@
 class parser{
 	
 	static $settings;
+	static $manialinks;
 	
 	static function loadSettings($settings = false)
 	{
-		if (!$settings)
+		if (!$settings){
 			self::$settings = json_decode(file_get_contents('sys/parser.plugin.json'));
-		else
+			self::$manialinks = json_decode(file_get_contents('sys/manialinks.json'));
+		} else {
 			self::$settings = $settings;
+			self::$manialinks = json_decode(file_get_contents('sys/manialinks.json'));
+		}
 	}
 	
 	static function web_frame($obj = array())
@@ -148,6 +152,8 @@ class parser{
     filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.5, M12=0, M21=0, M22=0.5,  SizingMethod='auto expand'); /*IE6, IE7*/
     transform: translateY(-50%);";
 	
+		if(!empty($obj['textcolor'])) echo 'color: #'.$obj['textcolor'].';';
+	
 		if (!empty($obj['halign']) or !empty($obj['valign']))
 		echo '">';
 		
@@ -228,6 +234,24 @@ class parser{
 		$obj['p2'] = round(((float)$obj['p2'] + $attr['p2']) * self::$settings->unit->modification->z, 2) * 100;
 	}
 	
+static function web_ml2url($obj = array())
+	{
+		if(!empty($obj['manialink'])){
+			$obj['url'] = '';
+			$ml = strtolower(explode('?', $obj['manialink'])[0]);
+			if(isset(self::$manialinks->$ml)){
+				$get = '';
+				if(isset(explode('?', $obj['manialink'])[1]))
+					$get = explode('?', $obj['manialink'])[1];
+				if(self::$manialinks->$ml == self::$settings->href)
+					$obj['url'] = '?web&amp;'.$get;
+				else
+					$obj['url'] = '?web&amp;origin='.self::$manialinks->$ml.'&amp;'.$get;
+				$obj['manialink'] = '';
+			}
+		}
+	}
+	
 	static function readability($obj = array())
 	{
 			if (self::$settings->readability)
@@ -250,7 +274,7 @@ class parser{
 	
 	static function urlControl($obj = array())
 	{
-		if (!empty($obj['url']) && strpos($obj['url'], 'http://') === FALSE && strpos($obj['url'], 'https://') === FALSE)
+		if (!empty($obj['url']) && substr($obj['url'], 0, 1) != '?' && strpos($obj['url'], 'http://') === FALSE && strpos($obj['url'], 'https://') === FALSE)
 			$obj['url'] = 'http://'.$obj['url'];
 	}
 
@@ -356,31 +380,32 @@ class parser{
 parser::loadSettings();
 
 if (OUTPUT == 'web') {
-	add_hook('xml_quad','parser::web_quad',18);
-	add_hook('xml_label','parser::web_label',18);
-	add_hook('xml_frame','parser::web_frame',18);
-	add_hook('xml_music','parser::web_music',18);
-	add_hook('xml_all','parser::web_unit',2);
+	add_hook('xml_quad','parser::web_quad', 18);
+	add_hook('xml_label','parser::web_label', 18);
+	add_hook('xml_frame','parser::web_frame', 18);
+	add_hook('xml_music','parser::web_music', 18);
+	add_hook('xml_all','parser::web_ml2url', 3);
+	add_hook('xml_all','parser::web_unit', 2);
 } else {
-	add_hook('xml_quad','parser::xml_convert',18);
-	add_hook('xml_label','parser::xml_convert',18);
-	add_hook('xml_audio','parser::xml_convert',18);
-	add_hook('xml_music','parser::xml_convert',18);
-	add_hook('xml_format','parser::xml_convert',18);
-	add_hook('xml_entry','parser::xml_convert',18);
-	add_hook('xml_fileentry','parser::xml_convert',18);
-	add_hook('xml_timeout','parser::xml_timeout',18);
-	add_hook('xml_frame','parser::xml_frame',18);
+	add_hook('xml_quad','parser::xml_convert', 18);
+	add_hook('xml_label','parser::xml_convert', 18);
+	add_hook('xml_audio','parser::xml_convert', 18);
+	add_hook('xml_music','parser::xml_convert', 18);
+	add_hook('xml_format','parser::xml_convert', 18);
+	add_hook('xml_entry','parser::xml_convert', 18);
+	add_hook('xml_fileentry','parser::xml_convert', 18);
+	add_hook('xml_timeout','parser::xml_timeout', 18);
+	add_hook('xml_frame','parser::xml_frame', 18);
 }
 
 if (INPUT != OUTPUT) {
-	add_hook('xml_quad','parser::quad_style',10);
-	add_hook('xml_quad','parser::bikToWebm',10);
+	add_hook('xml_quad','parser::quad_style', 10);
+	add_hook('xml_quad','parser::bikToWebm', 10);
 }
 
-//add_hook('xml_label','parser::label_fun',0);
-add_hook('xml_all','parser::href',1);
-add_hook('xml_all','parser::xml_position',1);
-add_hook('xml_all','parser::urlControl',10);
-add_hook('xml_quad','parser::enableImagefocus',15);
-add_hook('xml_all_end','parser::readability',20);
+//add_hook('xml_label','parser::label_fun', 0);
+add_hook('xml_all','parser::href', 1);
+add_hook('xml_all','parser::xml_position', 1);
+add_hook('xml_all','parser::urlControl', 10);
+add_hook('xml_quad','parser::enableImagefocus', 15);
+add_hook('xml_all_end','parser::readability', 20);
