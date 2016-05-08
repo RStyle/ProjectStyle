@@ -111,7 +111,7 @@ class parser{
 			echo '<a href="'.$obj['url'].'">';
 			self::readability();
 		} elseif (!empty($obj['manialink'])) {
-			echo '<a href="'.MLLINK.$obj['manialink'].'">';
+			echo '<a href="'.(strpos($obj['manialink'], '://') === false ? MLLINK : '').$obj['manialink'].'">';
 			self::readability();
 		}
 		
@@ -199,10 +199,13 @@ class parser{
 		echo '">';
 		
 		//<span style="position:absolute; left:964px; top:248px; z-index:1; width:27px; height:22px; font-size:18px; overflow:hidden;">
-		if ($obj["manialink"] != false or $obj["url"] != false && $obj['send'] != 1) {
+		if (!empty($obj["manialink"]) or !empty($obj["url"]) && $obj['send'] != 1) {
 			echo '<a ';
-			if ($obj["manialink"] != false or $obj["url"] != false) {
+			if (!empty($obj["url"])) {
 				echo 'href="'.$obj["url"].'"';
+			} elseif (!empty($obj['manialink'])) {
+			echo 'href="'.(strpos($obj['manialink'], '://') === false ? MLLINK : '').$obj['manialink'].'';
+			self::readability();
 			}
 			echo '">';
 		}
@@ -248,7 +251,7 @@ class parser{
 		if(!empty($obj['manialink'])){
 			$obj['url'] = '';
 			$ml = strtolower(explode('?', $obj['manialink'])[0]);
-			if(isset(self::$manialinks->$ml)){
+			if(!empty(self::$manialinks->$ml) && !empty($ml)){
 				$get = '';
 				if(isset(explode('?', $obj['manialink'])[1]))
 					$get = explode('?', $obj['manialink'])[1];
