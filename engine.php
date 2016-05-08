@@ -25,6 +25,15 @@ function addJs($js)
 	$javascript .= $js;
 }
 
+$css = array();
+function addCss($element, $style)
+{
+	global $css;
+	$css[$element][] = $style;
+}
+
+
+
 require_once('sys/phphooks.php');
 
 require_once('sys/tmfcolorparser.php');
@@ -90,6 +99,15 @@ if (OUTPUT == 'web') {
 		font-family:Verdana;
 		color:#FFF;
 	}
+';
+	foreach($css as $element => $style){
+	echo "\t".$element."{\n";
+		foreach($style as $styleLine){
+			echo "\t\t".$styleLine."\n";
+		}
+		echo"\t}\n";
+	}
+	echo'
 	-->
 	</style>
 	</head>
@@ -112,7 +130,7 @@ if (OUTPUT == 'web') {
 	/* ]]> */
 	</script>
 	</body>
-	</html>';
+</html>';
 } else {
 	echo '</manialink>';
 }

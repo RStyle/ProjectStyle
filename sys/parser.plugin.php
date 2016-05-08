@@ -16,18 +16,6 @@ class parser{
 		}
 	}
 	
-	static function web_frame($obj = array())
-	{
-		//print_r($obj);
-		global $attr;
-		if (empty($obj['scale']))
-			$obj['scale'] = 1.0;
-		$oldAttr = $attr;
-		$attr = array('scale' => $attr['scale'] * floatval($obj['scale']), 'p0' => $obj['p0'] - 50, 'p1' => $obj['p1'] - 50, 'p2' => '0', 'posn' => $obj['posn']);
-		pml($obj);
-		$attr = $oldAttr;
-	}
-	
 	static function xml_frame($obj = array())
 	{
 		echo '<frame '.
@@ -56,6 +44,64 @@ class parser{
 				$obj['substyle'] = '';
 			}
 		}
+	}
+	
+	static function xml_convert($obj = array())
+	{
+		global $webOnly;	
+		if ($obj['halign'] == 'left')
+			$obj['halign'] = '';
+		if ($obj['valign'] == 'top')
+			$obj['valign'] = '';
+		
+		echo '<'.$obj['xmlName'].' ';
+		foreach ($obj->attributes() as $key => $value) {
+			if ($value != '' && !in_array($key, $webOnly) && !in_array($key, array('pos', 'size')))
+				echo $key.'="'.$value.'" ';	
+		}
+		echo '/>';
+	}
+	
+	static function xml_timeout($obj = array())
+	{
+		echo '<timeout>'.$obj[0].'</timeout>';
+	}
+	
+	static function href($obj = array())
+	{
+		if (self::$settings->enableHref) {
+			foreach ($obj->attributes() as $key => $value) {
+				if (substr($value, 0, 2) == './') {
+					$obj[$key] = str_replace('./', self::$settings->href, $value);
+				}
+			}
+		}
+	}
+	
+	//---------------WEB----------------
+	
+	static function web_css($obj = array())
+	{
+		addCss('.pa', 'position:absolute; font-size:16;');
+		addCss('.la_hl_r', 'width:100%; position: absolute; text-align: right;');
+		addCss('.la_hl_c', 'width:100%; position: absolute; text-align: center;');
+		addCss('.la_vl_c', "-webkit-transform: translateY(-50%); /* child now centers itself relative to the  midline based on own contents */
+		-moz-transform: translateY(-50%);
+		-ms-transform: translateY(-50%);
+		-ms-filter: 'progid:DXImageTransform.Microsoft.Matrix(M11=0.5, M12=0, M21=0, M22=0.5,  SizingMethod=\"auto expand\")'; /*IE8 */
+		filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.5, M12=0, M21=0, M22=0.5,  SizingMethod='auto expand'); /*IE6, IE7*/
+		transform: translateY(-50%);");
+	}
+	
+	static function web_frame($obj = array())
+	{
+		global $attr;
+		if (empty($obj['scale']))
+			$obj['scale'] = 1.0;
+		$oldAttr = $attr;
+		$attr = array('scale' => $attr['scale'] * floatval($obj['scale']), 'p0' => $obj['p0'] - 50, 'p1' => $obj['p1'] - 50, 'p2' => '0', 'posn' => $obj['posn']);
+		pml($obj);
+		$attr = $oldAttr;
 	}
 	
 	static function web_quad($obj = array())
@@ -106,8 +152,6 @@ class parser{
 	{
 		global $colorPraser;
 		
-		//print_r($obj);
-		
 		if (empty($obj['text']) && empty($obj[0]))
 			return;
 		
@@ -122,7 +166,7 @@ class parser{
 		//if (!empty($obj['manialink']) && substr($obj['manialink'],0,4) == 'http')
 		//	$obj['manialink']=$_SERVER['SCRIPT_NAME'].'?load_file='.str_replace('&','%26',$obj['manialink']);	
 		
-		$textsize=((float)$obj['textsize'] + 2) * 0.3333 * 16;
+		$textsize=((float)$obj['textsize'] + 2) * 0.33 * 16;
 		//$textsize = ($obj['textsize'] / 3 + 0.66) * 16;
 			
 		/*echo '<div width="'.$obj['s0'].'" height="'.$obj['s1'].'" style="position:absolute;left:'.($obj['p0']).';top:'.($obj['p1']).';z-index:'.$obj['p2'].';
@@ -131,26 +175,23 @@ class parser{
 		(!empty($obj['halign']) ? 'text-align:'.$obj['halign'].';' : '' ).
 		'">';*/
 		
-		echo '<div style="position:absolute;left:'.($obj['p0']).';top:'.($obj['p1']).';z-index:'.$obj['p2'].';
-		 width:'.$obj['s0'].'; height:'.$obj['s1'].'; font-size:'.$textsize.';">';
+		echo '<div class="pa" style="left:'.($obj['p0']).';top:'.($obj['p1']).';z-index:'.$obj['p2'].';
+		 width:'.$obj['s0'].'; height:'.$obj['s1'].';'. ($textsize != 15.84 ? 'font-size:'.$textsize : '').'">';
 		
 		
 		if (!empty($obj['halign']) or !empty($obj['valign']))
-			echo '<div style="';
+			echo '<div class="';
 			
 		if ($obj['halign'] == 'right')
-			echo 'width:100%; position: absolute; text-align: right;';
+			echo 'la_hl_r ';
 		
 		if ($obj['halign'] == 'center')
-			echo 'width:100%; position: absolute; text-align: center;';
+			echo 'la_hl_c ';
 			
 		if ($obj['valign'] == 'center')
-			echo "-webkit-transform: translateY(-50%); /* child now centers itself relative to the  midline based on own contents */
-    -moz-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    -ms-filter: 'progid:DXImageTransform.Microsoft.Matrix(M11=0.5, M12=0, M21=0, M22=0.5,  SizingMethod=\"auto expand\")'; /*IE8 */
-    filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.5, M12=0, M21=0, M22=0.5,  SizingMethod='auto expand'); /*IE6, IE7*/
-    transform: translateY(-50%);";
+			echo 'la_vl_c';
+		
+		echo '" style="';
 	
 		if(!empty($obj['textcolor'])) echo 'color: #'.$obj['textcolor'].';';
 	
@@ -186,43 +227,11 @@ class parser{
 	{
 		if (!empty($obj['data']) && self::$music != 1) {
 			self::$music = 1;
-			echo '<audio class="backgroundMusic" src="'.$obj['data'].'" volume="0.2" style="position:absolute;'.self::$settings->music->position[0].
-			':0px;'.self::$settings->music->position[1].':0px" autoplay loop'.(self::$settings->music->controls ? ' controls' : '').'></audio>';
+			echo '<audio class="backgroundMusic pa" src="'.$obj['data'].'" volume="0.2" style="'.self::$settings->music->position[0].
+			':0px;'.self::$settings->music->position[1].':0px" loop'.(self::$settings->music->controls ? ' controls' : '').'></audio>';
 			addJs('$(".backgroundMusic").prop("volume", '.self::$settings->music->volume.');');
 		}
 	}
-	
-	static function xml_convert($obj = array())
-	{
-		global $webOnly;	
-		if ($obj['halign'] == 'left')
-			$obj['halign'] = '';
-		if ($obj['valign'] == 'top')
-			$obj['valign'] = '';
-		
-		echo '<'.$obj['xmlName'].' ';
-		foreach ($obj->attributes() as $key => $value) {
-			if ($value != '' && !in_array($key, $webOnly) && !in_array($key, array('pos', 'size')))
-				echo $key.'="'.$value.'" ';	
-		}
-		echo '/>';
-	}
-	
-	static function xml_timeout($obj = array())
-	{
-		echo '<timeout>'.$obj[0].'</timeout>';
-	}
-	
-	static function href($obj = array())
-	{
-		if (self::$settings->enableHref) {
-			foreach ($obj->attributes() as $key => $value) {
-				if (substr($value, 0, 2) == './') {
-					$obj[$key] = str_replace('./', self::$settings->href, $value);
-				}
-			}
-		}
-	} 
 
 	static function web_unit($obj = array())
 	{
@@ -234,7 +243,7 @@ class parser{
 		$obj['p2'] = round(((float)$obj['p2'] + $attr['p2']) * self::$settings->unit->modification->z, 2) * 100;
 	}
 	
-static function web_ml2url($obj = array())
+	static function web_ml2url($obj = array())
 	{
 		if(!empty($obj['manialink'])){
 			$obj['url'] = '';
@@ -251,6 +260,8 @@ static function web_ml2url($obj = array())
 			}
 		}
 	}
+	
+	//----------WEB-END-------------
 	
 	static function readability($obj = array())
 	{
@@ -380,6 +391,7 @@ static function web_ml2url($obj = array())
 parser::loadSettings();
 
 if (OUTPUT == 'web') {
+	parser::web_css();
 	add_hook('xml_quad','parser::web_quad', 18);
 	add_hook('xml_label','parser::web_label', 18);
 	add_hook('xml_frame','parser::web_frame', 18);
